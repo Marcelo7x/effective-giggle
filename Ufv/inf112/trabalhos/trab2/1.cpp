@@ -3,74 +3,54 @@
 #include <string.h>
 using namespace std;
 
-
-int main(int argc, char **argv){
-
-    ifstream entrada(argv[1]);
-    if (!entrada.is_open()){
-        cerr << " Erro ao abrir arquivo de entrada.\n";
-        exit(1);
-    }
-    int cont1 = 0, cont2 = 0;
-    bool a = false, b = false;
-    
-    char classes[100], temp[100];
-    
-    entrada.getline(classes,100);
-    //cout << classes << endl;
-
-    for (int i = 0, j = 0; i < 100; i++)
-    {
-        temp[j] = classes[i];
-        temp[j+1] = '\0';
-        j++;
-        //cout << temp << endl;
-        
-        /*if (a == false)
-            cont1++;
-        if (b == false)
-            cont2++;*/
-
-        if (strcmp(temp, argv[3]) == 0)
-            a = true; 
-
-        if (strcmp(temp, argv[4]) == 0)
-            b = true;
-       
-        if ((a == true)&&(b == true))
-            break;
-        
-        if (classes[i+1] == ',')
-        {
-            i++;
-            j = 0;
-            
-            if (a == false)
-                cont1++;
-            if (b == false)
-                cont2++;
-        }
-        //cout << a << b << endl;
-    }
-    cout << cont1 << " " << cont2 << endl;
-
-    struct ordena
+struct Dispositivos
     {
         char chave[100];
         int valor;
     };
-    
-    ordena *disp1 = new ordena[100];
-    char aux[100];
-    
-    int pos1 = 0, pos2 = 0, j = 0, k = 0;
+
+void posicaoChaves(char *colunas, char **argv , int n, int &cont1, int &cont2){
+    char temp[n];
+    bool aux1 = false, aux2 = false;
+    for (int i = 0, j = 0; i < 100; i++)
+    {
+        temp[j] = colunas[i];
+        temp[j+1] = '\0';
+        j++;
+      
+        if (strcmp(temp, argv[3]) == 0)
+           aux1 = true; 
+
+        if (strcmp(temp, argv[4]) == 0)
+            aux2 = true;
+       
+        if ((aux1 == true)&&(aux2 == true))
+            break;
+        
+        if (colunas[i+1] == ',')
+        {
+            i++;
+            j = 0;
+            
+            if (aux1 == false)
+                cont1++;
+            if (aux2 == false)
+                cont2++;
+        }
+    }
+}
+
+int leituraChaves(Dispositivos *disp1, ifstream& entrada, int n, int cont1, int cont2){
+    char aux[n], temp[n];
+    int pos1, pos2, j, linhas = 0;
+
     while (true)
     {
         if (entrada.eof())
             break;
-        //entrada.ignore();
+
         entrada.getline(temp,100);
-        cout << temp << endl;
+
         j=0; pos1 = 0; pos2 = 0;
         for (int i = 0; i < 100; i++)
         {
@@ -83,11 +63,10 @@ int main(int argc, char **argv){
                 break;
             }
             if ((cont1 == pos1) && (temp[i]!='\n') ){
-                disp1[k].chave[j] = temp[i];
-                disp1[k].chave[j+1] = '\0'; 
+                disp1[linhas].chave[j] = temp[i];
+                disp1[linhas].chave[j+1] = '\0'; 
                 j++;  
             }
-            cout << pos1 <<" " <<cont1 <<disp1[k].chave << endl;
         }
         j=0;
         for (int i = 0; i < 100; i++)
@@ -105,19 +84,39 @@ int main(int argc, char **argv){
                 aux[j+1] = '\0';
                 j++;
             }
-             cout << pos2 <<" " <<cont2 <<aux << endl;
         }
-        disp1[k].valor = atoi(aux);
-        cout << disp1[k].valor << endl;
-        k++;
+        disp1[linhas].valor = atoi(aux);
+        linhas++;
     }
-    
-    for (int i = 0; i < k; i++)
-    {
+    return linhas;
+}
+
+void imprimeChaves(char **argv, Dispositivos *disp1, int linhas){
+    cout << argv[3] << " " << argv[4] << endl;
+    for (int i = 0; i < linhas; i++)
         cout << disp1[i].chave << " " << disp1[i].valor << endl;
+}
+
+int main(int argc, char **argv){
+
+    ifstream entrada(argv[1]);
+    if (!entrada.is_open()){
+        cerr << " Erro ao abrir arquivo de entrada.\n";
+        exit(1);
     }
+    int n = 100, linhas;
+    int cont1 = 0, cont2 = 0;
     
+    char colunas[n];
     
+    entrada.getline(colunas,100);
+    posicaoChaves(colunas, argv, n, cont1, cont2);
+    
+    Dispositivos *disp1 = new Dispositivos[n];
+
+    linhas = leituraChaves(disp1, entrada, n, cont1, cont2);
+
+    imprimeChaves(argv, disp1, linhas);
     
     entrada.close();
 
