@@ -11,33 +11,50 @@ int main(int argc, char **argv){
         cerr << " Erro ao abrir arquivo de entrada.\n";
         exit(1);
     }
-    int n = 0, m = 0;
+    int cont1 = 0, cont2 = 0;
+    bool a = false, b = false;
     
-    char temp1[100], temp2[100];
+    char classes[100], temp[100];
+    
+    entrada.getline(classes,100);
+    cout << classes << endl;
 
-    bool a = true , b = true;
-
-    while (a==true || b==true)
+    for (int i = 0, j = 0; i < 100; i++)
     {
-        entrada.getline(temp1,100, ',');
+        temp[j] = classes[i];
+        temp[j+1] = '\0';
+        j++;
+        cout << temp << endl;
         
-        if (strcmp(temp1, argv[2]) == 0){
-            cout << temp1 << " ";
-            a = false;        
-        }    
-        if (strcmp(temp1, argv[3]) == 0){
-            b = false;    
-            cout << temp1 << " ";
+        if (a == false)
+            cont1++;
+        if (b == false)
+            cont2++;
+            
+        if (strcmp(temp, argv[3]) == 0)
+            a = true; 
+
+        if (strcmp(temp, argv[4]) == 0)
+            b = true;
+       
+        if ((a == true)&&(b == true))
+            break;
+        
+        if (classes[i+1] == ',')
+        {
+            i++;
+            j = 0;
+            
+            if (a == false)
+                cont1++;
+            if (b == false)
+                cont2++;
         }
-        if (a == true)
-            n++;
-        if (b == true)
-            m++;
+        cout << a << b << endl;
     }
     
-  
-    cout << n << " " << m << endl;
-  
+    cout << cont1 << " " << cont2 << endl;
+
     entrada.close();
 
     return 0;
