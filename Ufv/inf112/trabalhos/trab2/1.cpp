@@ -1,7 +1,14 @@
 #include <iostream>
 #include <fstream>
 #include <string.h>
+#include <string>
 using namespace std;
+
+char* converte(string str){
+    char *c = new char [str.length()+1];
+    strcpy (c, str.c_str());
+    return c;
+}
 
 struct Dispositivos
     {
@@ -41,7 +48,8 @@ void posicaoChaves(char *colunas, char **argv , int n, int &cont1, int &cont2){
 }
 
 int leituraChaves(Dispositivos *disp1, ifstream& entrada, int n, int cont1, int cont2){
-    char aux[n], temp[n];
+    string str;
+    char *temp,*aux;
     int pos1, pos2, j, linhas = 0;
 
     while (true)
@@ -49,16 +57,18 @@ int leituraChaves(Dispositivos *disp1, ifstream& entrada, int n, int cont1, int 
         if (entrada.eof())
             break;
 
-        entrada.getline(temp,100);
+        getline(entrada, str);
+        temp = converte(str);
+
 
         j=0; pos1 = 0; pos2 = 0;
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; temp[i] != '\0'; i++)
         {
             if (temp[i] == ',' ){
                 pos1++;
                 i++;
             }
-            if (pos1 >cont1)
+            if (pos1 > cont1)
             {
                 break;
             }
@@ -69,7 +79,8 @@ int leituraChaves(Dispositivos *disp1, ifstream& entrada, int n, int cont1, int 
             }
         }
         j=0;
-        for (int i = 0; i < 100; i++)
+        aux = new char[sizeof(temp)];
+        for (int i = 0; temp[i] != '\0'; i++)
         {
             if (temp[i] == ',' ){
                 pos2++;
@@ -87,6 +98,7 @@ int leituraChaves(Dispositivos *disp1, ifstream& entrada, int n, int cont1, int 
         }
         disp1[linhas].valor = atoi(aux);
         linhas++;
+        delete[] aux;
     }
     return linhas;
 }
@@ -106,19 +118,30 @@ int main(int argc, char **argv){
     }
     int n = 100, linhas;
     int cont1 = 0, cont2 = 0;
+    int registros = atoi(argv[2]);
     
-    char colunas[n];
+    string str;
+    //char colunas[n];
     
-    entrada.getline(colunas,100);
+    getline(entrada, str);
+    char * colunas = converte(str);
+
     posicaoChaves(colunas, argv, n, cont1, cont2);
-    
-    Dispositivos *disp1 = new Dispositivos[n];
 
+    /*char disp[n], disp1[n];
+    for (int i = 0; i < linhas/registros; i++)
+    {
+        sprintf(disp, "disp%d.txt", i);
+        ofstream saida(disp);
+    }*/
+
+    Dispositivos disp1[10];
     linhas = leituraChaves(disp1, entrada, n, cont1, cont2);
-
     imprimeChaves(argv, disp1, linhas);
     
+    
     entrada.close();
+    delete[] colunas;
 
     return 0;
 }
