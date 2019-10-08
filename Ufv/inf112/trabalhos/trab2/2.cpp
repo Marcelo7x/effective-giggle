@@ -47,7 +47,7 @@ void posicaoChaves(char *colunas, char **argv , int n, int &cont1, int &cont2){
     }
 }
 
-int leituraChave(Dispositivos *disp1, ifstream& entrada, int n, int cont1, int cont2){
+int leituraChave(Dispositivos *disp1, ifstream& entrada, int cont1, int cont2){
     string str;
     char *temp,*aux;
     int pos1, pos2, j, linhas = 0;
@@ -98,6 +98,57 @@ int leituraChave(Dispositivos *disp1, ifstream& entrada, int n, int cont1, int c
     return linhas;
 }
 
+int part_ordena(ifstream& entrada, int cap_memoria, int cont1, int cont2){
+    char disp[20];
+    int j;
+
+    Dispositivos disp1[cap_memoria], disp_temp;
+    int cont_disp = 0;
+   
+    while(true){
+        if (entrada.eof())
+            break;
+
+        sprintf(disp, "disp%d.txt", cont_disp);
+        fstream saida(disp, std::fstream::in | std::fstream::out | std::fstream::app);
+        if (!saida.is_open()){
+            cerr << " Erro ao abrir arquivo de fstream.\n";
+            exit(1);
+            }
+
+        for (int i = 0; i < cap_memoria; i++)
+        {
+            if (entrada.eof())
+                break;
+
+            leituraChave((disp1+i), entrada, cont1, cont2);
+
+            if (i > 0)
+            {
+                j = i;
+                while(j>0)
+                {
+                    
+                    if (strcmp(disp1[j].chave, disp1[j-1].chave) < 0)
+                    {
+                        disp_temp = disp1[j-1];
+                        disp1[j-1] = disp1[j];
+                        disp1[j] = disp_temp;
+                        j--;
+                    }
+                    else
+                        break;
+                }
+            }
+        }
+        for (int i = 0; i < cap_memoria; i++)  // BUG
+            saida << disp1[i].chave << " " << disp1[i].valor << endl;
+        
+        cont_disp++;
+        saida.close();
+    }
+}
+
 void imprimeChaves(char **argv, Dispositivos *disp1, int linhas){
     cout << argv[3] << " " << argv[4] << endl;
     for (int i = 0; i < linhas; i++)
@@ -124,69 +175,11 @@ int main(int argc, char **argv){
 
     posicaoChaves(colunas, argv, n, cont1, cont2);
 
-    char disp[20];
-    /*for (int i = 0; i < linhas/cap_memoria; i++)
-    {
-        sprintf(disp, "disp%d.txt", i);
-        fstream saida(disp);
-    }*/
-
-    Dispositivos disp1[cap_memoria], disp_temp;
-    int cont_disp = 0;
-   
-    while(true){
-        if (entrada.eof())
-            break;
-
-        sprintf(disp, "disp%d.txt", cont_disp);
-        fstream saida(disp, std::fstream::in | std::fstream::out | std::fstream::app);
-        if (!saida.is_open()){
-            cerr << " Erro ao abrir arquivo de fstream.\n";
-            exit(1);
-            }
-
-        for (int i = 0; i < cap_memoria; i++)
-        {
-            if (entrada.eof())
-                break;
-
-            leituraChave((disp1+i), entrada, n, cont1, cont2);
-            cout << 2 << endl;
-            if (i > 0)
-            {
-                j = i;
-                while(j>0)
-                {
-                    
-                    if (strcmp(disp1[j].chave, disp1[j-1].chave) < 0)
-                    {
-                        cout << 1 << endl;
-                        strcpy(disp_temp.chave,disp1[j-1].chave);
-                        strcpy(disp1[j-1].chave,disp1[j].chave);
-                        strcpy(disp1[j].chave,disp_temp.chave);
-                        j--;
-                    }
-                    else
-                        break;
-                }
-                
-            }
-            
-            //saida << disp1[i].chave << " " << disp1[i].valor << endl;
-        }
-        for (size_t i = 0; i < cap_memoria; i++)
-        {
-            saida << disp1[i].chave << " " << disp1[i].valor << endl;
-        }
-        
-
-        cont_disp++;
-    }
+    int cont_disp = part_ordena(entrada, cap_memoria,cont1, cont2);
     
-
-    imprimeChaves(argv, disp1, cap_memoria);
     
     entrada.close();
+    
     delete[] colunas;
 
     return 0;
