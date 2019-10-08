@@ -47,10 +47,11 @@ void posicaoChaves(char *colunas, char **argv , int n, int &cont1, int &cont2){
     }
 }
 
-int leituraChave(Dispositivos *disp1, ifstream& entrada, int cont1, int cont2){
+Dispositivos leituraChave(ifstream& entrada, int cont1, int cont2){
+    Dispositivos disp1;
     string str;
     char *temp,*aux;
-    int pos1, pos2, j, linhas = 0;
+    int pos1, pos2, j;
 
     getline(entrada, str);
     temp = converte(str);
@@ -68,8 +69,8 @@ int leituraChave(Dispositivos *disp1, ifstream& entrada, int cont1, int cont2){
             break;
         }
         if ((cont1 == pos1) && (temp[i]!='\n') ){
-            disp1[linhas].chave[j] = temp[i];
-            disp1[linhas].chave[j+1] = '\0'; 
+            disp1.chave[j] = temp[i];
+            disp1.chave[j+1] = '\0'; 
             j++;  
         }
     }
@@ -91,11 +92,9 @@ int leituraChave(Dispositivos *disp1, ifstream& entrada, int cont1, int cont2){
             j++;
         }
     }
-    disp1[linhas].valor = atoi(aux);
-    linhas++;
+    disp1.valor = atoi(aux);
     delete[] aux;
-    
-    return linhas;
+    return disp1;
 }
 
 int part_ordena(ifstream& entrada, int cap_memoria, int cont1, int cont2){
@@ -121,7 +120,7 @@ int part_ordena(ifstream& entrada, int cap_memoria, int cont1, int cont2){
             if (entrada.eof())
                 break;
 
-            leituraChave((disp1+i), entrada, cont1, cont2);
+            disp1[i] =leituraChave(entrada, cont1, cont2);
 
             if (i > 0)
             {
@@ -142,12 +141,92 @@ int part_ordena(ifstream& entrada, int cap_memoria, int cont1, int cont2){
             }
         }
         for (int i = 0; i < cap_memoria; i++)  // BUG
-            saida << disp1[i].chave << " " << disp1[i].valor << endl;
+            saida << disp1[i].chave << "," << disp1[i].valor << endl;
         
         cont_disp++;
         saida.close();
     }
+    return cont_disp;
 }
+
+void part_ordena2(int cont_disp, int cap_memoria){
+    Dispositivos disp1[cap_memoria], disp_temp;
+    char disp[20], *c, *aux, *aux2;
+    string str;
+    int cont_disp2 = 0, l = 0 ;
+    int cont_disp3 = cont_disp+cont_disp2, k;
+
+    int mdisp = 0, j;
+    for (int i = 0; i < cap_memoria; i++)
+    {
+        if (cont_disp2 > cont_disp)
+        {
+            break;
+        }
+        
+        sprintf(disp, "disp%d.txt", cont_disp2);
+        fstream saida(disp, std::fstream::in);
+        if (!saida.is_open()){
+            cerr << " Erro ao abrir arquivo de fstream.\n";
+            exit(1);
+        }
+        cont_disp2++;
+
+        getline(saida, str, ' ');
+        c = converte(str);
+        
+        for (int i = 0; c[i] == '\0'; i++)
+        {
+            disp1[mdisp].chave[i] = c[i];
+            disp1[mdisp].chave[i+1] = '\0';
+            k = i;
+        }
+        delete[]c;
+        
+        getline(saida, str, '\0');
+        c = converte(str);
+        aux = new char[sizeof(c)];
+
+        for (int i = k; c[i] != '\0'; i++)
+        {
+            aux[i] = c[i];
+            aux[i+1] = '\0';
+        }
+        disp1[mdisp].valor = atoi(aux);
+        delete[] aux;
+    
+        if (i > 0)
+            {
+                j = i;
+                while(j>0)
+                {
+                    
+                    if (strcmp(disp1[j].chave, disp1[j-1].chave) < 0)
+                    {
+                        disp_temp = disp1[j-1];
+                        disp1[j-1] = disp1[j];
+                        disp1[j] = disp_temp;
+                        j--;
+                    }
+                    else
+                        break;
+                }
+                saida.close();
+            }
+    }
+    sprintf(disp, "disp%d.txt", cont_disp3);
+        fstream saida2(disp, std::fstream::in | std::fstream::out | std::fstream::app);
+        if (!saida2.is_open()){
+            cerr << " Erro ao abrir arquivo de fstream.\n";
+            exit(1);
+        }
+    for (int i = 0; i < cap_memoria; i++)  // BUG
+            saida2 << disp1[i].chave << " " << disp1[i].valor << endl;
+    l++;
+    mdisp++;
+    
+}
+
 
 void imprimeChaves(char **argv, Dispositivos *disp1, int linhas){
     cout << argv[3] << " " << argv[4] << endl;
@@ -176,6 +255,8 @@ int main(int argc, char **argv){
     posicaoChaves(colunas, argv, n, cont1, cont2);
 
     int cont_disp = part_ordena(entrada, cap_memoria,cont1, cont2);
+    cout << cont_disp << endl;
+    part_ordena2(cont_disp, cap_memoria);
     
     
     entrada.close();
