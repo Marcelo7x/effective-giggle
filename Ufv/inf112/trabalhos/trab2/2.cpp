@@ -106,6 +106,7 @@ void imprimeChaves(char **argv, Dispositivos *disp1, int linhas){
 
 int main(int argc, char **argv){
 
+    int j;
     ifstream entrada(argv[1]);
     if (!entrada.is_open()){
         cerr << " Erro ao abrir arquivo de entrada.\n";
@@ -130,7 +131,7 @@ int main(int argc, char **argv){
         fstream saida(disp);
     }*/
 
-    Dispositivos disp1[cap_memoria];
+    Dispositivos disp1[cap_memoria], disp_temp;
     int cont_disp = 0;
    
     while(true){
@@ -150,11 +151,39 @@ int main(int argc, char **argv){
                 break;
 
             leituraChave((disp1+i), entrada, n, cont1, cont2);
+            cout << 2 << endl;
+            if (i > 0)
+            {
+                j = i;
+                while(j>0)
+                {
+                    
+                    if (strcmp(disp1[j].chave, disp1[j-1].chave) < 0)
+                    {
+                        cout << 1 << endl;
+                        strcpy(disp_temp.chave,disp1[j-1].chave);
+                        strcpy(disp1[j-1].chave,disp1[j].chave);
+                        strcpy(disp1[j].chave,disp_temp.chave);
+                        j--;
+                    }
+                    else
+                        break;
+                }
+                
+            }
+            
+            //saida << disp1[i].chave << " " << disp1[i].valor << endl;
+        }
+        for (size_t i = 0; i < cap_memoria; i++)
+        {
             saida << disp1[i].chave << " " << disp1[i].valor << endl;
         }
+        
+
         cont_disp++;
     }
     
+
     imprimeChaves(argv, disp1, cap_memoria);
     
     entrada.close();
