@@ -1,0 +1,8 @@
+categoria,salario,idade,vontade
+A,10,30,muita
+B,20,32,pouca
+C,30,33,pouca
+D,10,23,muita
+A,5,34,pouca
+A,40,54,muita
+B,50,43,muita
