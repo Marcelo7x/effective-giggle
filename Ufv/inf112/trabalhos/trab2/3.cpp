@@ -160,6 +160,7 @@ int part_ordena(ifstream &entrada, int cap_memoria, int cont1, int cont2)
 
             disp1[i] = leituraChave(entrada, cont1, cont2, 0); //extrai registros
             cont++;
+            cout << "aloc1\n";
 
             if (i > 0)
             {
@@ -195,10 +196,13 @@ int part_ordena(ifstream &entrada, int cap_memoria, int cont1, int cont2)
         }
         cont_disp++;
         saida.close(); //fecha os arquivos
+        for(int i = 0; i < cap_memoria ;i++){
+        delete[] disp1[i].chave;
+        cout << "desaloc1\n";
+    }
     }
 
-    for(int i = 0; i < cap_memoria ;i++)
-        delete[] disp1[i].chave;
+   
     delete[] disp1;
     
     return cont_disp;
@@ -238,6 +242,7 @@ void intercala(int cont_dispositivos, int capac_memoria)
             }
 
             disps[i] = leituraChave(arquivo, 0, 1, 0);
+            cout << "aloc2\n";
             //cout << "disp " << disps[i].chave << " " << disps[i].valor << endl;
 
             arquivo.close();
@@ -297,6 +302,7 @@ void intercala(int cont_dispositivos, int capac_memoria)
         arquivo.close();
         
         delete[] disps[pos].chave;
+        cout << "desaloc2\n";
         desalocouChave[pos] = true;
 
         if (podeAcabar[pos])
@@ -327,6 +333,7 @@ void intercala(int cont_dispositivos, int capac_memoria)
                 //cout << " dispositivo " << pos << endl;
                 //cout << "contador disp " << pos << " " << contDisp[pos] << endl;
                 disps[pos] = leituraChave(arquivo, 0, 1, contDisp[pos]);
+                cout << "aloc3\n";
                 if (arquivo.eof())
                 {
                     podeAcabar[pos] = true;
@@ -352,8 +359,10 @@ void intercala(int cont_dispositivos, int capac_memoria)
     }
     
     for(int i = 0; i < cont_dispositivos ;i++)
-        if(!desalocouChave[i])
+        if(!desalocouChave[i]){
             delete[] disps[i].chave;
+            cout << "desaloc3\n";
+        }
     
     delete[] disps;
     delete[] acabouDisp;
