@@ -203,12 +203,13 @@ void intercala(int cont_dispositivos, int capac_memoria, int cont1, int cont2)
     char disp_aux[20];
     int cont = 0, a = 0;
     int contDisp[cont_dispositivos];
-    bool acabouDisp[cont_dispositivos];
+    bool acabouDisp[cont_dispositivos], podeAcabar[cont_dispositivos];
     bool acabou = false;
 
     for (int i = 0; i < cont_dispositivos; i++)
     {
         acabouDisp[i] = false;
+        podeAcabar[i] = false;
         contDisp[i] = 0;
     }
 
@@ -280,6 +281,10 @@ void intercala(int cont_dispositivos, int capac_memoria, int cont1, int cont2)
         arquivo << menor.chave << "," << menor.valor << endl;
         cout << " menor final " << menor.chave << "," << menor.valor << endl;
         arquivo.close();
+        if (podeAcabar[pos])
+            acabouDisp[pos] = true;
+        
+        
 
         //cout << "contDisp[pos] = " << contDisp[pos];
 
@@ -308,7 +313,7 @@ void intercala(int cont_dispositivos, int capac_memoria, int cont1, int cont2)
                 disps[pos] = leituraChave(arquivo, 0, 1, contDisp[pos]);
                 if (arquivo.eof())
                 {
-                    acabouDisp[pos] = true;
+                    podeAcabar[pos] = true;
                 }
 
                 contDisp[pos]++;
