@@ -20,8 +20,8 @@ struct Dispositivos //struct para facilitar a ordenacao dos registros
 void imprimeChaves(/*char **argv,*/ Dispositivos *disp1, int linhas)
 {
     //cout << argv[3] << " " << argv[4] << endl;
-    for (int i = 0; i < linhas; i++)
-        cout << disp1[i].chave << " " << disp1[i].valor << endl;
+    //for (int i = 0; i < linhas; i++)
+        //cout << disp1[i].chave << " " << disp1[i].valor << endl;
 }
 
 void posicaoChaves(ifstream &entrada, char **argv, int &cont1, int &cont2)
@@ -31,11 +31,10 @@ void posicaoChaves(ifstream &entrada, char **argv, int &cont1, int &cont2)
     string str; //string auxiliar
     getline(entrada, str);
     char *colunas = converte(str); //coverte a string auxiliar par aum vetor de char
-
-    char *temp = new char[sizeof(colunas)]; //vertor de char auxiliar
+    char *temp = new char[strlen(colunas)+1]; //vertor de char auxiliar
     bool achou1 = false, achou2 = false;    //indica se encontrou as chaves
-
-    for (int i = 0, j = 0; colunas[i] != '\0'; i++)
+    int i = 0,j = 0;
+    for (i = 0, j = 0; colunas[i] != '\0'; i++)
     {
         temp[j] = colunas[i];
         temp[j + 1] = '\0';
@@ -76,10 +75,17 @@ Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2, int igno)
         getline(entrada, str);
 
     getline(entrada, str); // le a linha desejadas e converte
-    cout << "get = " << str << endl;
+
     temp = converte(str);
    
-    disp1.chave = new char[sizeof(temp)];
+    disp1.chave = new char[strlen(temp)];
+
+    if(temp[0] == '\n'){
+            disp1.chave[0] = 'm';
+            disp1.valor = 777;
+            return disp1;
+        }
+
 
     for (int i = 0; temp[i] != '\0'; i++)
     {
@@ -99,11 +105,9 @@ Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2, int igno)
             j++;
         }
     }
-    
-    //disp1.chave = (char *) realloc(disp1.chave,(j+1)*sizeof(char));
 
     j = 0;
-    aux = new char[sizeof(temp)];
+    aux = new char[strlen(temp)];
 
     for (int i = 0; temp[i] != '\0'; i++)
     {
@@ -209,15 +213,18 @@ void intercala(int cont_dispositivos, int capac_memoria)
     Dispositivos *disps = new Dispositivos[cont_dispositivos];
     char disp_aux[20];
     int cont = 0, a = 0;
-    int contDisp[cont_dispositivos];
-    bool acabouDisp[cont_dispositivos], podeAcabar[cont_dispositivos];
+    int *contDisp = new int[cont_dispositivos];
+    bool *acabouDisp = new bool[cont_dispositivos], *podeAcabar = new bool[cont_dispositivos];
     bool acabou = false;
+    bool *desalocouChave = new bool[cont_dispositivos];
+    bool desalocouMenor = false;
 
     for (int i = 0; i < cont_dispositivos; i++)
     {
         acabouDisp[i] = false;
         podeAcabar[i] = false;
         contDisp[i] = 0;
+        desalocouChave[i] = false;
     }
 
     for (int i = 0; i < cont_dispositivos; i++)
@@ -235,7 +242,7 @@ void intercala(int cont_dispositivos, int capac_memoria)
             }
 
             disps[i] = leituraChave(arquivo, 0, 1, 0);
-            cout << "disp " << disps[i].chave << " " << disps[i].valor << endl;
+            //cout << "disp " << disps[i].chave << " " << disps[i].valor << endl;
 
             arquivo.close();
             contDisp[i]++;
@@ -243,7 +250,7 @@ void intercala(int cont_dispositivos, int capac_memoria)
     }
 
     Dispositivos menor;
-    menor.chave = new char [sizeof(disps[0].chave)*3];
+    menor.chave = new char[sizeof(disps[0].chave)*3];
     int pos = 0;
 
     while (!acabou)
@@ -254,7 +261,9 @@ void intercala(int cont_dispositivos, int capac_memoria)
             //cout << "primeiro for\n";
             if (!acabouDisp[i])
             {
-                menor = disps[i];
+                menor.valor = disps[i].valor;
+                menor.chave = disps[i].chave;
+
                 break;
             }
         }
@@ -266,16 +275,17 @@ void intercala(int cont_dispositivos, int capac_memoria)
             {
                 if (strcmp(disps[i].chave, menor.chave) <= 0)
                 {
-                    menor = disps[i];
+                    menor.chave = disps[i].chave;
+                    menor.valor = disps[i].valor;
                     pos = i;
                 }
             }
         }
 
         for (int i = 0; i < cont_dispositivos; i++)
-            cout << "dispositivo " << i << " " << disps[i].chave << ", " << disps[i].valor << endl;
-        //cout << menor.chave << "," << menor.valor << endl;
-        //cout << "saiu segundo for\n";
+            //cout << "dispositivo " << i << " " << disps[i].chave << ", " << disps[i].valor << endl;
+            //cout << menor.chave << "," << menor.valor << endl;
+            //cout << "saiu segundo for\n";
 
         sprintf(disp_aux, "disp%d.txt", cont_dispositivos);
 
@@ -287,11 +297,12 @@ void intercala(int cont_dispositivos, int capac_memoria)
         }
 
         arquivo << menor.chave << "," << menor.valor << endl;
-        cout << " menor final " << menor.chave << "," << menor.valor << endl;
+        //cout << " menor final " << menor.chave << "," << menor.valor << endl;
         arquivo.close();
         
         delete[] disps[pos].chave;
-        
+        desalocouChave[pos] = true;
+
         if (podeAcabar[pos])
             acabouDisp[pos] = true;
         
@@ -310,8 +321,6 @@ void intercala(int cont_dispositivos, int capac_memoria)
                 exit(1);
             }
 
-            //leituraChave(arquivo, 0, 1, contDisp[pos]);
-
             if (arquivo.eof())
             {
                 acabouDisp[pos] = true;
@@ -319,14 +328,15 @@ void intercala(int cont_dispositivos, int capac_memoria)
             else
             {
 
-                cout << " dispositivo " << pos << endl;
-                cout << "contador disp " << pos << " " << contDisp[pos] << endl;
+                //cout << " dispositivo " << pos << endl;
+                //cout << "contador disp " << pos << " " << contDisp[pos] << endl;
                 disps[pos] = leituraChave(arquivo, 0, 1, contDisp[pos]);
                 if (arquivo.eof())
                 {
                     podeAcabar[pos] = true;
                 }
 
+                desalocouChave[pos] = false;
                 contDisp[pos]++;
             }
             arquivo.close();
@@ -337,16 +347,22 @@ void intercala(int cont_dispositivos, int capac_memoria)
             if (!acabouDisp[i])
             {
                 acabou = false;
-                cout << " nao acabou disp " << i << endl;
+                //cout << " nao acabou disp " << i << endl;
                 break;
             }
+        
+        //if(!desalocouMenor)
+            //delete[] menor.chave;
     }
     
     for(int i = 0; i < cont_dispositivos ;i++)
-        delete[] disps[i].chave;
+        if(!desalocouChave[i])
+            delete[] disps[i].chave;
     
     delete[] disps;
-    delete[] menor.chave;
+    delete[] acabouDisp;
+    delete[] contDisp;
+    delete[] desalocouChave;
 }
 int main(int argc, char **argv)
 {
