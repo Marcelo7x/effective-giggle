@@ -201,63 +201,73 @@ void intercala(int cont_dispositivos, int capac_memoria, int cont1, int cont2)
 {
     Dispositivos disps[cont_dispositivos];
     char disp_aux[20];
-    int cont = 0;
-    int contDisp[cont_dispositivos] = {0};
-    bool acabouDisp[cont_dispositivos] = {false};
+    int cont = 0, a = 0;
+    int contDisp[cont_dispositivos];
+    bool acabouDisp[cont_dispositivos];
     bool acabou = false;
-    int quantDisp = 0, a;
-
-    for (int i = 0; i < cont_dispositivos; i++)
-        acabouDisp[i] = false;
-    
 
     for (int i = 0; i < cont_dispositivos; i++)
     {
+        acabouDisp[i] = false;
+        contDisp[i] = 0;
+    }
 
-        sprintf(disp_aux, "disp%d.txt", i);
-
-        ifstream arquivo(disp_aux);
-        if (!arquivo.is_open())
+    for (int i = 0; i < cont_dispositivos; i++)
+    {
+        if (!acabouDisp[i])
         {
-            cerr << "Nao abriu o arquivo\n";
-            exit(1);
-        }
 
-        disps[i] = leituraChave(arquivo, 0, 1, 0);
-        cout << "disp " << disps[i].chave << " "<< disps[i].valor << endl;
-        arquivo.close();
-        contDisp[i]++;
+            sprintf(disp_aux, "disp%d.txt", i);
+
+            ifstream arquivo(disp_aux);
+            if (!arquivo.is_open())
+            {
+                cerr << "Nao abriu o arquivo\n";
+                exit(1);
+            }
+
+            disps[i] = leituraChave(arquivo, 0, 1, 0);
+            cout << "disp " << disps[i].chave << " " << disps[i].valor << endl;
+
+            arquivo.close();
+            contDisp[i]++;
+        }
     }
 
     Dispositivos menor;
-    int pos = 0, posaux, numd = 0;
+    int pos = 0;
 
-
-   while (true)
-   {
-       for (int i = 0; i < cont_dispositivos; i++)
-           if (acabouDisp[i] == false)
-           {
-               menor = disps[i];
-               break;
-           }
-        cout << menor.chave << " " << menor.valor; 
-        
-
+    while (!acabou)
+    {
+        //cout << "entrou while\n";
         for (int i = 0; i < cont_dispositivos; i++)
         {
+            //cout << "primeiro for\n";
             if (!acabouDisp[i])
             {
-                if (strcmp(disps[i].chave, menor.chave) < 0)
+                menor = disps[i];
+                break;
+            }
+        }
+        //cout << menor.chave << "," << menor.valor << endl;
+        for (int i = 0; i < cont_dispositivos; i++)
+        {
+            //cout << "segundo for\n";
+            if (!acabouDisp[i])
+            {
+                if (strcmp(disps[i].chave, menor.chave) <= 0)
                 {
-                    cout << " knncec\n";
                     menor = disps[i];
                     pos = i;
-                    numd = i;
                 }
             }
         }
-        cout << "";
+
+        for (int i = 0; i < cont_dispositivos; i++)
+            cout << "dispositivo " << i << " " << disps[i].chave << ", " << disps[i].valor << endl;
+        //cout << menor.chave << "," << menor.valor << endl;
+        //cout << "saiu segundo for\n";
+
         sprintf(disp_aux, "disp%d.txt", cont_dispositivos);
 
         fstream arquivo(disp_aux, std::fstream::out | std::fstream::app);
@@ -268,62 +278,53 @@ void intercala(int cont_dispositivos, int capac_memoria, int cont1, int cont2)
         }
 
         arquivo << menor.chave << "," << menor.valor << endl;
-        cout << menor.chave << " " << menor.valor << "menoor\n";
+        cout << " menor final " << menor.chave << "," << menor.valor << endl;
         arquivo.close();
 
-        
-        cout << pos << " " << numd <<" pos\n";
-        if (!acabouDisp[numd])
-        {
-            sprintf(disp_aux, "disp%d.txt", numd);
-            ifstream arquivo2(disp_aux);
-            if (!arquivo2.is_open()){
-                cerr << " Erro ao abrir arquivo de ifstream.\n";
-                exit(1);
-            }
-            
-            disps[pos] = leituraChave(arquivo2, 0, 1, contDisp[numd]);
-            contDisp[numd]++;
-        
-            if (arquivo2.eof())
-                acabouDisp[numd] == true;
+        //cout << "contDisp[pos] = " << contDisp[pos];
 
-            arquivo2.close();
-        }
-        else
+        if (!acabouDisp[pos])
         {
-            for (int i = 0; i < cont_dispositivos; i++)
+            sprintf(disp_aux, "disp%d.txt", pos);
+
+            ifstream arquivo(disp_aux);
+            if (!arquivo.is_open())
             {
-                if (!acabouDisp[i]){
-                    numd = i;
-                    break;
-                }
-            }
-             sprintf(disp_aux, "disp%d.txt", numd);
-            ifstream arquivo2(disp_aux);
-            if (!arquivo2.is_open()){
-                cerr << " Erro ao abrir arquivo de ifstream.\n";
+                cerr << "Nao abriu o arquivo\n";
                 exit(1);
             }
-            
-            disps[pos] = leituraChave(arquivo2, 0, 1, contDisp[numd]);
-            contDisp[numd]++;
-        
-            if (arquivo2.eof())
-                acabouDisp[numd] == true;
 
+            //leituraChave(arquivo, 0, 1, contDisp[pos]);
+
+            if (arquivo.eof())
+            {
+                acabouDisp[pos] = true;
+            }
+            else
+            {
+
+                cout << " dispositivo " << pos << endl;
+                cout << "contador disp " << pos << " " << contDisp[pos] << endl;
+                disps[pos] = leituraChave(arquivo, 0, 1, contDisp[pos]);
+                if (arquivo.eof())
+                {
+                    acabouDisp[pos] = true;
+                }
+
+                contDisp[pos]++;
+            }
             arquivo.close();
         }
-        
+
         acabou = true;
         for (int i = 0; i < cont_dispositivos; i++)
-        {
             if (!acabouDisp[i])
-                acabou == false; 
-        }
-   }
-   
-    
+            {
+                acabou = false;
+                cout << " nao acabou disp " << i << endl;
+                break;
+            }
+    }
 }
 int main(int argc, char **argv)
 {
@@ -348,7 +349,7 @@ int main(int argc, char **argv)
     int cont_disp = part_ordena(entrada, cap_memoria, cont1, cont2); //faz leitura das linhas do arquivo base e guarda
                                                                      // em n/m ou n/m+1 arquivos auxiliares
 
-    intercala(cont_disp,cap_memoria,cont1,cont2);
+    intercala(cont_disp, cap_memoria, cont1, cont2);
 
     entrada.close();
 
