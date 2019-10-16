@@ -13,8 +13,8 @@ char *converte(string str)
 
 struct Dispositivos //struct para facilitar a ordenacao dos registros
 {
-    char chave[100];
-    int valor;
+    char *chave;
+    double valor;
 };
 
 void imprimeChaves(/*char **argv,*/ Dispositivos *disp1, int linhas)
@@ -78,6 +78,8 @@ Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2, int igno)
     getline(entrada, str); // le a linha desejadas e converte
     cout << "get = " << str << endl;
     temp = converte(str);
+   
+    disp1.chave = new char[sizeof(temp)];
 
     for (int i = 0; temp[i] != '\0'; i++)
     {
@@ -97,6 +99,9 @@ Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2, int igno)
             j++;
         }
     }
+    
+    //disp1.chave = (char *) realloc(disp1.chave,(j+1)*sizeof(char));
+
     j = 0;
     aux = new char[sizeof(temp)];
 
@@ -119,7 +124,7 @@ Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2, int igno)
         }
     }
 
-    disp1.valor = atoi(aux);
+    disp1.valor = atof(aux);
 
     delete[] aux;
     return disp1;
@@ -193,13 +198,15 @@ int part_ordena(ifstream &entrada, int cap_memoria, int cont1, int cont2)
         saida.close(); //fecha os arquivos
     }
 
+    for(int i = 0; i < cap_memoria ;i++)
+        delete[] disp1[i].chave;
     delete[] disp1;
     return cont_disp;
 }
 
-void intercala(int cont_dispositivos, int capac_memoria, int cont1, int cont2)
+void intercala(int cont_dispositivos, int capac_memoria)
 {
-    Dispositivos disps[cont_dispositivos];
+    Dispositivos *disps = new Dispositivos[cont_dispositivos];
     char disp_aux[20];
     int cont = 0, a = 0;
     int contDisp[cont_dispositivos];
@@ -236,6 +243,7 @@ void intercala(int cont_dispositivos, int capac_memoria, int cont1, int cont2)
     }
 
     Dispositivos menor;
+    menor.chave = new char [sizeof(disps[0].chave)*3];
     int pos = 0;
 
     while (!acabou)
@@ -281,6 +289,9 @@ void intercala(int cont_dispositivos, int capac_memoria, int cont1, int cont2)
         arquivo << menor.chave << "," << menor.valor << endl;
         cout << " menor final " << menor.chave << "," << menor.valor << endl;
         arquivo.close();
+        
+        delete[] disps[pos].chave;
+        
         if (podeAcabar[pos])
             acabouDisp[pos] = true;
         
@@ -330,6 +341,12 @@ void intercala(int cont_dispositivos, int capac_memoria, int cont1, int cont2)
                 break;
             }
     }
+    
+    for(int i = 0; i < cont_dispositivos ;i++)
+        delete[] disps[i].chave;
+    
+    delete[] disps;
+    delete[] menor.chave;
 }
 int main(int argc, char **argv)
 {
@@ -354,7 +371,7 @@ int main(int argc, char **argv)
     int cont_disp = part_ordena(entrada, cap_memoria, cont1, cont2); //faz leitura das linhas do arquivo base e guarda
                                                                      // em n/m ou n/m+1 arquivos auxiliares
 
-    intercala(cont_disp, cap_memoria, cont1, cont2);
+    intercala(cont_disp, cap_memoria);
 
     entrada.close();
 
