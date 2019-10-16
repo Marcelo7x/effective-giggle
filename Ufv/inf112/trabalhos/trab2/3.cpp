@@ -80,13 +80,6 @@ Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2, int igno)
    
     disp1.chave = new char[strlen(temp)];
 
-    if(temp[0] == '\n'){
-            disp1.chave[0] = 'm';
-            disp1.valor = 777;
-            return disp1;
-        }
-
-
     for (int i = 0; temp[i] != '\0'; i++)
     {
         if (temp[i] == ',')
@@ -130,6 +123,7 @@ Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2, int igno)
 
     disp1.valor = atof(aux);
 
+    delete[] temp;
     delete[] aux;
     return disp1;
 }
@@ -179,6 +173,7 @@ int part_ordena(ifstream &entrada, int cap_memoria, int cont1, int cont2)
                         disp1[j - 1] = disp1[j];
                         disp1[j] = disp_temp;
                         j--;
+                        delete disp_temp.chave;
                     }
                     else
                         break;
@@ -205,6 +200,7 @@ int part_ordena(ifstream &entrada, int cap_memoria, int cont1, int cont2)
     for(int i = 0; i < cap_memoria ;i++)
         delete[] disp1[i].chave;
     delete[] disp1;
+    
     return cont_disp;
 }
 
@@ -361,6 +357,7 @@ void intercala(int cont_dispositivos, int capac_memoria)
     
     delete[] disps;
     delete[] acabouDisp;
+    delete[] podeAcabar;
     delete[] contDisp;
     delete[] desalocouChave;
 }
