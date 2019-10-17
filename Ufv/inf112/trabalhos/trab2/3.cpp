@@ -369,6 +369,7 @@ void intercala(int cont_dispositivos, int capac_memoria)
     delete[] podeAcabar;
     delete[] contDisp;
     delete[] desalocouChave;
+    delete[] menor.chave;
 }
 int main(int argc, char **argv)
 {
