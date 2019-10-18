@@ -25,39 +25,39 @@ void posicaoChaves(ifstream &entrada, char **argv, int &cont1, int &cont2)
     getline(entrada, str);
     char *colunas = converte(str); //coverte a string auxiliar par aum vetor de char
     char *temp = new char[strlen(colunas)+1]; //vertor de char auxiliar
+    *temp = '\0';
     bool achou1 = false, achou2 = false;    //indica se encontrou as chaves
     int i = 0,j = 0;
     for (i = 0, j = 0; colunas[i] != '\0'; i++)
     {
-        temp[j] = colunas[i];
-        temp[j + 1] = '\0';
-        j++;
+            if(isalnum(colunas[i]) || colunas[i] == '.'){
+                temp[j] = colunas[i];
+                temp[j + 1] = '\0';
+                j++;
+            }
+            
+            if (strcmp(temp, argv[3]) == 0) //verica se encontrou a primeira chave
+                achou1 = true;
 
-        if (strcmp(temp, argv[3]) == 0) //verica se encontrou a primeira chave
-            achou1 = true;
+            if (strcmp(temp, argv[4]) == 0) //verifica se encotrou a segunda chave
+                achou2 = true;
 
-        if (strcmp(temp, argv[4]) == 0) //verifica se encotrou a segunda chave
-            achou2 = true;
+            if ((achou1 == true) && (achou2 == true))
+                break;
 
-        if ((achou1 == true) && (achou2 == true))
-            break;
+            if (colunas[i + 1] == ',')
+            {
+                i++;
+                j = 0;
 
-        if (colunas[i + 1] == ',')
-        {
-            i++;
-            j = 0;
-
-            if (achou1 == false)
-                cont1++;
-            if (achou2 == false)
-                cont2++;
-        }
+                if (achou1 == false)
+                    cont1++;
+                if (achou2 == false)
+                    cont2++;
+            }
+        
     }
-    if(cont2<cont1){
-        int aux = cont2;
-        cont2 = cont1;
-        cont1 = aux;
-    }
+    
 
     delete[] colunas;
     delete[] temp;
@@ -69,6 +69,7 @@ Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2, int igno)
     string str;         //string e ponteios para char nescessarios
     char *temp, *aux;
     int pos1 = 0, pos2 = 0, j = 0;
+    bool acabou = false;
 
     for (int i = 0; i < igno; i++) //ignora linhas ja lidas
         getline(entrada, str);
@@ -87,10 +88,10 @@ Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2, int igno)
             pos1++;
             i++;
         }
+        
         if (pos1 > cont1)
-        {
             break;
-        }
+
         if ((cont1 == pos1) && (temp[i] != '\n'))
         { //apos encontrar a posicao da chave copia o registro pra um struct
             disp1.chave[j] = temp[i];
@@ -113,7 +114,7 @@ Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2, int igno)
         {
             break;
         }
-        if ((cont2 == pos2) && (temp[i] != '\n'))
+        if ((cont2 == pos2) && (temp[i] != '\n') &&(temp[i] != '\"'))
         { //apos encontrar a posicao da chave copia o registro pra um struct
             disp1.valor[j] = temp[i];
             disp1.valor[j + 1] = '\0';
@@ -144,9 +145,9 @@ int main(int argc, char **argv){
 
     int k = 0;
     bool passou = false;
-    Dispositivos *aux = new Dispositivos[90];
+    Dispositivos *aux = new Dispositivos[9];
 
-    for(int i=0;i<90;i++){
+    for(int i=0;i<9;i++){
         aux[i] = leituraChave(entrada,cont1,cont2,0);
         cout << i << " " << aux[i].chave << " " << aux[i].valor << endl;
     }
@@ -156,7 +157,7 @@ int main(int argc, char **argv){
     //int cont_disp = part_ordena(entrada, cap_memoria, cont1, cont2); //faz leitura das linhas do arquivo base e guarda
                                                                      // em n/m ou n/m+1 arquivos auxiliares
 
-    for(int i=0;i<90;i++){
+    for(int i=0;i<9;i++){
         delete[] aux[i].chave;
         delete[] aux[i].valor;
     }
