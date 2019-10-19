@@ -11,11 +11,43 @@ char *converte(string str)
     return c;
 }
 
+
 struct Dispositivos //struct para facilitar a ordenacao dos registros
 {
     char *chave;
     char *valor;
 };
+
+void Quick(Dispositivos *disps, int inicio, int fim){
+   
+   Dispositivos pivo, aux;
+   int i, j, meio;
+   
+   i = inicio;
+   j = fim;
+   
+   meio = (int) ((i + j) / 2);
+   pivo = disps[meio];
+   
+   do{
+       
+        while (strcmp(disps[i].chave, pivo.chave) < 0) i = i + 1;
+        while (strcmp(disps[j].chave, pivo.chave) > 0) j = j - 1;
+        cout << "a" << endl; 
+        if(i <= j)
+        {
+            aux = disps[i];
+            disps[i] = disps[j];
+            disps[j] = aux;
+            i = i + 1;
+            j = j - 1;
+        }
+    }while(j > i);
+   
+   if(inicio < j) Quick(disps, inicio, j);
+   if(i < fim) Quick(disps, i, fim);   
+
+}
 
 void posicaoChaves(ifstream &entrada, char **argv, int &cont1, int &cont2)
 { //encontra a posicao das chaves a serem utilizadas
@@ -65,7 +97,7 @@ void posicaoChaves(ifstream &entrada, char **argv, int &cont1, int &cont2)
 
 Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2, int igno)
 {                       //le uma linha d arquivo de entrada e devolve
-    Dispositivos disp1; //os regitros das chaves desejadas em struct
+    Dispositivos disps; //os regitros das chaves desejadas em struct
     string str;         //string e ponteios para char nescessarios
     char *temp, *aux;
     int pos1 = 0, pos2 = 0, j = 0;
@@ -78,8 +110,8 @@ Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2, int igno)
 
     temp = converte(str);
    
-    disp1.chave = new char[strlen(temp)];
-    disp1.valor = new char[strlen(temp)];
+    disps.chave = new char[strlen(temp)+1];
+    disps.valor = new char[strlen(temp)+1];
 
     for (int i = 0; temp[i] != '\0'; i++)
     {
@@ -92,10 +124,10 @@ Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2, int igno)
         if (pos1 > cont1)
             break;
 
-        if ((cont1 == pos1) && (temp[i] != '\n'))
+        if ((cont1 == pos1) && (temp[i] != '\n') && (temp[i] != '\"'))
         { //apos encontrar a posicao da chave copia o registro pra um struct
-            disp1.chave[j] = temp[i];
-            disp1.chave[j + 1] = '\0';
+            disps.chave[j] = temp[i];
+            disps.chave[j + 1] = '\0';
             j++;
         }
     }
@@ -114,17 +146,78 @@ Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2, int igno)
         {
             break;
         }
-        if ((cont2 == pos2) && (temp[i] != '\n') &&(temp[i] != '\"'))
+        if ((cont2 == pos2) && (temp[i] != '\n') && (temp[i] != '\"'))
         { //apos encontrar a posicao da chave copia o registro pra um struct
-            disp1.valor[j] = temp[i];
-            disp1.valor[j + 1] = '\0';
+            disps.valor[j] = temp[i];
+            disps.valor[j + 1] = '\0';
             j++;
         }
     }
 
     delete[] temp;
-    return disp1;
+    return disps;
 }
+
+int part_ordena(ifstream &entrada, int cap_memoria, int cont1, int cont2)
+{ //le registros, ordena-os e grava em um dispositivo auxiliar
+    char disp[20];
+    Dispositivos *disps = new Dispositivos[cap_memoria];
+    int cont_disp = 0, cont, j;
+    bool passou = false;
+
+    while (true)
+    {
+        if (entrada.eof())
+            break;
+
+        sprintf(disp, "arquivo%d.txt", cont_disp); //abre arquivo auxiliar para a gravacao
+        fstream saida(disp, std::fstream::in | std::fstream::out | std::fstream::app);
+        if (!saida.is_open())
+        { //verifica se arquivo foi aberto
+            cerr << " Erro ao abrir arquivo de fstream.\n";
+            exit(1);
+        }
+
+        cont = 0;
+
+        for (int i = 0; i < cap_memoria; i++)
+        {
+            if (entrada.eof())
+            {
+                passou = true;
+                break;
+            }
+
+            disps[i] = leituraChave(entrada, cont1, cont2, 0); //extrai registros
+            cont++;
+        }
+
+        Quick(disps, 0, cont-1);
+
+        for (int i = 0; i < cont; i++)
+        {
+            if (i != cont - 1)
+            {
+                //grava os registros ordenados nos arquivos
+                saida << disps[i].chave << "," << disps[i].valor << endl;
+            }
+            else
+            {
+                saida << disps[i].chave << "," << disps[i].valor;
+            }
+            
+            delete[] disps[i].chave;
+            delete[] disps[i].valor;
+        }
+        cont_disp++;
+        saida.close(); //fecha os arquivos
+    }
+   
+    delete[] disps;
+    
+    return cont_disp;
+}
+
 
 int main(int argc, char **argv){
 
@@ -135,34 +228,19 @@ int main(int argc, char **argv){
         exit(1);
     }
 
-    int cont1 = 0, cont2 = 0;        // contadores para guardarem as posicoes das chaves usadas para a ordenaçao
+    int cont1 = 0, cont2 = 0, quantArquivos;        // contadores para guardarem as posicoes das chaves usadas para a ordenaçao
     int cap_memoria = atoi(argv[2]); //capacidade de leitura
 
     string str; //string auxiliar para leitura de uma linha de arquivo e logo apos onverter em um vertor char
     //char colunas[n];
 
     posicaoChaves(entrada, argv, cont1, cont2); //funcoes para encotrar as posicoes das colunas onde estao as chaves
+    
+    quantArquivos = part_ordena(entrada, cap_memoria, cont1, cont2);
 
-    int k = 0;
-    bool passou = false;
-    Dispositivos *aux = new Dispositivos[9];
+    
 
-    for(int i=0;i<9;i++){
-        aux[i] = leituraChave(entrada,cont1,cont2,0);
-        cout << i << " " << aux[i].chave << " " << aux[i].valor << endl;
-    }
-
-    cout << cont1 << endl;
-    cout << cont2 << endl;
-    //int cont_disp = part_ordena(entrada, cap_memoria, cont1, cont2); //faz leitura das linhas do arquivo base e guarda
-                                                                     // em n/m ou n/m+1 arquivos auxiliares
-
-    for(int i=0;i<9;i++){
-        delete[] aux[i].chave;
-        delete[] aux[i].valor;
-    }
-
-    delete[] aux;
+  
 
     return 0;
 }
