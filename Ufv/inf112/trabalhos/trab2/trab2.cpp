@@ -33,7 +33,7 @@ void Quick(Dispositivos *disps, int inicio, int fim){
        
         while (strcmp(disps[i].chave, pivo.chave) < 0) i = i + 1;
         while (strcmp(disps[j].chave, pivo.chave) > 0) j = j - 1;
-        cout << "a" << endl; 
+        //cout << "a" << endl; 
         if(i <= j)
         {
             aux = disps[i];
@@ -101,15 +101,16 @@ Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2, int igno)
     string str;         //string e ponteios para char nescessarios
     char *temp, *aux;
     int pos1 = 0, pos2 = 0, j = 0;
-    bool acabou = false;
-
-    for (int i = 0; i < igno; i++) //ignora linhas ja lidas
+    bool acabou = false;    
+   
+    for (int i = 0; i < igno; i++){ //ignora linhas ja lidas
         getline(entrada, str);
+    }
 
     getline(entrada, str); // le a linha desejadas e converte
+    
 
     temp = converte(str);
-   
     disps.chave = new char[strlen(temp)+1];
     disps.valor = new char[strlen(temp)+1];
 
@@ -130,6 +131,7 @@ Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2, int igno)
             disps.chave[j + 1] = '\0';
             j++;
         }
+        
     }
 
 
@@ -153,6 +155,8 @@ Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2, int igno)
             j++;
         }
     }
+    
+    //cout << "leu " << disps.chave << ' ' << disps.valor << " ";
 
     delete[] temp;
     return disps;
@@ -167,7 +171,7 @@ int part_ordena(ifstream &entrada, int cap_memoria, int cont1, int cont2)
 
     while (true)
     {
-        if (entrada.eof())
+        if (entrada.peek() == -1)
             break;
 
         sprintf(disp, "arquivo%d.txt", cont_disp); //abre arquivo auxiliar para a gravacao
@@ -182,13 +186,14 @@ int part_ordena(ifstream &entrada, int cap_memoria, int cont1, int cont2)
 
         for (int i = 0; i < cap_memoria; i++)
         {
-            if (entrada.eof())
+            if (entrada.peek() == -1)
             {
                 passou = true;
                 break;
             }
 
             disps[i] = leituraChave(entrada, cont1, cont2, 0); //extrai registros
+            //cout << "comfir " << disps[i].chave << ' ' << disps[i].valor << endl;
             cont++;
         }
 
@@ -198,12 +203,17 @@ int part_ordena(ifstream &entrada, int cap_memoria, int cont1, int cont2)
         {
             if (i != cont - 1)
             {
+                if (isalnum(disps[i].chave[0]))
+                {
                 //grava os registros ordenados nos arquivos
                 saida << disps[i].chave << "," << disps[i].valor << endl;
+                //cout << disps[i].chave << "," << disps[i].valor << endl;
+                }
             }
             else
             {
                 saida << disps[i].chave << "," << disps[i].valor;
+                //cout << disps[i].chave << "," << disps[i].valor << " acab"<< endl;
             }
             
             delete[] disps[i].chave;
@@ -216,6 +226,168 @@ int part_ordena(ifstream &entrada, int cap_memoria, int cont1, int cont2)
     delete[] disps;
     
     return cont_disp;
+}
+
+void intercala(int cont_dispositivos, int capac_memoria)
+{
+    Dispositivos *disps = new Dispositivos[cont_dispositivos];
+    char disp_aux[20];
+    int cont = 0, a = 0;
+    int *contDisp = new int[cont_dispositivos];
+    bool *acabouDisp = new bool[cont_dispositivos], *podeAcabar = new bool[cont_dispositivos];
+    bool acabou = false;
+    bool *desalocouChave = new bool[cont_dispositivos];
+    bool desalocouMenor = false;
+
+    for (int i = 0; i < cont_dispositivos; i++)
+    {
+        acabouDisp[i] = false;
+        podeAcabar[i] = false;
+        contDisp[i] = 0;
+        desalocouChave[i] = false;
+    }
+
+    for (int i = 0; i < cont_dispositivos; i++)
+    {
+        if (!acabouDisp[i])
+        {
+
+            sprintf(disp_aux, "arquivo%d.txt", i);
+
+            ifstream arquivo(disp_aux);
+            if (!arquivo.is_open())
+            {
+                cerr << i <<"Nao abriu o arquivo\n";
+                
+                exit(1);
+            }
+
+            disps[i] = leituraChave(arquivo, 0, 1, 0);
+            //cout << "disp " << disps[i].chave << " " << disps[i].valor << endl;
+
+            arquivo.close();
+            contDisp[i]++;
+        }
+    }
+
+    Dispositivos menor;
+    //menor.chave = new char[strlen(disps[0].chave)*3];
+    int pos = 0;
+
+    while (!acabou)
+    {
+        //cout << "entrou while\n";
+        for (int i = 0; i < cont_dispositivos; i++)
+        {
+            //cout << "primeiro for\n";
+            if (!acabouDisp[i])
+            {
+                menor.valor = disps[i].valor;
+                menor.chave = disps[i].chave;
+
+                break;
+            }
+        }
+        //cout << menor.chave << "," << menor.valor << endl;
+        for (int i = 0; i < cont_dispositivos; i++)
+        {
+            //cout << "segundo for\n";
+            if (!acabouDisp[i])
+            {
+                if (strcmp(disps[i].chave, menor.chave) <= 0)
+                {
+                    menor.chave = disps[i].chave;
+                    menor.valor = disps[i].valor;
+                    pos = i;
+                }
+            }
+        }
+
+        for (int i = 0; i < cont_dispositivos; i++)
+            //cout << "dispositivo " << i << " " << disps[i].chave << ", " << disps[i].valor << endl;
+            //cout << menor.chave << "," << menor.valor << endl;
+            //cout << "saiu segundo for\n";
+
+        sprintf(disp_aux, "arquivo%d.txt", cont_dispositivos);
+
+        fstream arquivo(disp_aux, std::fstream::out | std::fstream::app);
+        if (!arquivo.is_open())
+        {
+            cerr << "Nao abriu o arquivo final\n";
+            exit(1);
+        }
+
+        arquivo << menor.chave << "," << menor.valor << endl;
+        //cout << " menor final " << menor.chave << "," << menor.valor << endl;
+        arquivo.close();
+        
+        delete[] disps[pos].chave;
+        delete[] disps[pos].valor;
+        desalocouChave[pos] = true;
+
+        if (podeAcabar[pos])
+            acabouDisp[pos] = true;
+        
+        
+
+        //cout << "contDisp[pos] = " << contDisp[pos];
+
+        if (!acabouDisp[pos])
+        {
+            sprintf(disp_aux, "arquivo%d.txt", pos);
+
+            ifstream arquivo(disp_aux);
+            if (!arquivo.is_open())
+            {
+                cerr << "Nao abriu o arquivo\n";
+                exit(1);
+            }
+
+            if (arquivo.eof())
+            {
+                acabouDisp[pos] = true;
+            }
+            else
+            {
+
+                //cout << " dispositivo " << pos << endl;
+                //cout << "contador disp " << pos << " " << contDisp[pos] << endl;
+                disps[pos] = leituraChave(arquivo, 0, 1, contDisp[pos]);
+                if (arquivo.eof())
+                {
+                    podeAcabar[pos] = true;
+                }
+
+                desalocouChave[pos] = false;
+                contDisp[pos]++;
+            }
+            arquivo.close();
+        }
+
+        acabou = true;
+        for (int i = 0; i < cont_dispositivos; i++)
+            if (!acabouDisp[i])
+            {
+                acabou = false;
+                //cout << " nao acabou disp " << i << endl;
+                break;
+            }
+        
+        //if(!desalocouMenor)
+            //delete[] menor.chave;
+    }
+    
+    for(int i = 0; i < cont_dispositivos ;i++)
+        if(!desalocouChave[i]){
+            delete[] disps[i].chave;
+            delete[] disps[i].valor;
+        }
+    
+    delete[] disps;
+    delete[] acabouDisp;
+    delete[] podeAcabar;
+    delete[] contDisp;
+    delete[] desalocouChave;
 }
 
 
@@ -238,7 +410,7 @@ int main(int argc, char **argv){
     
     quantArquivos = part_ordena(entrada, cap_memoria, cont1, cont2);
 
-    
+    intercala(quantArquivos, cap_memoria);
 
   
 
