@@ -280,30 +280,30 @@ void intercala(int cont_dispositivos, int capac_memoria)
         for (int i = 0; i < cont_dispositivos; i++)
         {
             //cout << "primeiro for\n";
-            if (!acabouDisp[i])
+            if (acabouDisp[pos])
             {
-                menor.valor = disps[i].valor;
-                menor.chave = disps[i].chave;
-
+                pos++;
                 break;
             }
         }
         //cout << menor.chave << "," << menor.valor << endl;
-        for (int i = 0; i < cont_dispositivos; i++)
+        //for (int i = 0; i < cont_dispositivos; i++)
+        //{
+        if (pos == cont_dispositivos)
         {
-            //cout << "segundo for\n";
-            if (!acabouDisp[i])
-            {
-                if (strcmp(disps[i].chave, menor.chave) <= 0)
-                {
-                    menor.chave = disps[i].chave;
-                    menor.valor = disps[i].valor;
-                    pos = i;
-                }
-            }
+            break;
         }
+        
+            //cout << "segundo for\n";
+            if (!acabouDisp[pos])
+            {
+                menor.chave = disps[pos].chave;
+                menor.valor = disps[pos].valor;
+                }
+            
+        //}
 
-        for (int i = 0; i < cont_dispositivos; i++)
+        //for (int i = 0; i < cont_dispositivos; i++)
             //cout << "dispositivo " << i << " " << disps[i].chave << ", " << disps[i].valor << endl;
             //cout << menor.chave << "," << menor.valor << endl;
             //cout << "saiu segundo for\n";
@@ -317,7 +317,7 @@ void intercala(int cont_dispositivos, int capac_memoria)
             exit(1);
         }
 
-        arquivo << menor.chave << "," << menor.valor << endl;
+        arquivo << disps[pos].chave << "," << disps[pos].valor << endl;
         //cout << " menor final " << menor.chave << "," << menor.valor << endl;
         arquivo.close();
         
@@ -327,8 +327,6 @@ void intercala(int cont_dispositivos, int capac_memoria)
 
         if (podeAcabar[pos])
             acabouDisp[pos] = true;
-        
-        
 
         //cout << "contDisp[pos] = " << contDisp[pos];
 
@@ -343,13 +341,13 @@ void intercala(int cont_dispositivos, int capac_memoria)
                 exit(1);
             }
 
-            if (arquivo.eof())
+            if (arquivo.peek() == -1)
             {
                 acabouDisp[pos] = true;
             }
+
             else
             {
-
                 //cout << " dispositivo " << pos << endl;
                 //cout << "contador disp " << pos << " " << contDisp[pos] << endl;
                 disps[pos] = leituraChave(arquivo, 0, 1, contDisp[pos]);
