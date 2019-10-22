@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string.h>
 #include <string>
+#include <iomanip>
 using namespace std;
 
 char *converte(string str)
@@ -231,6 +232,7 @@ int part_ordena(ifstream &entrada, int cap_memoria, int cont1, int cont2)
 void intercala(int cont_dispositivos, int capac_memoria)
 {
     Dispositivos *disps = new Dispositivos[cont_dispositivos];
+    long double resultFinal = 0;
     char disp_aux[20];
     int cont = 0, a = 0;
     int *contDisp = new int[cont_dispositivos];
@@ -271,64 +273,86 @@ void intercala(int cont_dispositivos, int capac_memoria)
     }
 
     Dispositivos menor;
+    char auxx[100];
+    int contFinal = 0;
+    
+
     //menor.chave = new char[strlen(disps[0].chave)*3];
     int pos = 0;
+    int i = 0;
+
+    /*sprintf(disp_aux, "arquivoFinal%d.txt", cont_dispositivos);
+
+        fstream arquivoFinal(disp_aux, std::fstream::out | std::fstream::app);
+        if (!arquivoFinal.is_open())
+        {
+            cerr << "Nao abriu o arquivo final\n";
+            exit(1);
+        }*/
 
     while (!acabou)
     {
-        //cout << "entrou while\n";
-        for (int i = 0; i < cont_dispositivos; i++)
+         for (int i = 0; i < cont_dispositivos; i++)
         {
             //cout << "primeiro for\n";
-            if (acabouDisp[pos])
+            if (!acabouDisp[i])
             {
-                pos++;
+                menor.valor = disps[i].valor;
+                menor.chave = disps[i].chave;
+
                 break;
             }
         }
         //cout << menor.chave << "," << menor.valor << endl;
-        //for (int i = 0; i < cont_dispositivos; i++)
-        //{
-        if (pos == cont_dispositivos)
+        for (int i = 0; i < cont_dispositivos; i++)
         {
-            break;
+            //cout << "segundo for\n";
+            if (!acabouDisp[i])
+            {
+                if (strcmp(disps[i].chave, menor.chave) <= 0)
+                {
+                    menor.chave = disps[i].chave;
+                    menor.valor = disps[i].valor;
+                    pos = i;
+                }
+            }
         }
         
-            //cout << "segundo for\n";
-            if (!acabouDisp[pos])
-            {
-                menor.chave = disps[pos].chave;
-                menor.valor = disps[pos].valor;
-                }
-            
-        //}
-
-        //for (int i = 0; i < cont_dispositivos; i++)
-            //cout << "dispositivo " << i << " " << disps[i].chave << ", " << disps[i].valor << endl;
-            //cout << menor.chave << "," << menor.valor << endl;
-            //cout << "saiu segundo for\n";
-
-        sprintf(disp_aux, "arquivo%d.txt", cont_dispositivos);
-
-        fstream arquivo(disp_aux, std::fstream::out | std::fstream::app);
-        if (!arquivo.is_open())
+        
+        //arquivoFinal << disps[pos].chave << "," << disps[pos].valor << endl;
+        
+        if (resultFinal == 0){
+            cout << disps[pos].chave << " ";
+            resultFinal = stod(disps[pos].valor);
+            strcpy(auxx, disps[pos].chave);
+            contFinal = 2;
+        } 
+        if (strcmp(disps[pos].chave, auxx) == 0)
         {
-            cerr << "Nao abriu o arquivo final\n";
-            exit(1);
+            resultFinal += stod(disps[pos].valor);
+            contFinal++;
         }
-
-        arquivo << disps[pos].chave << "," << disps[pos].valor << endl;
-        //cout << " menor final " << menor.chave << "," << menor.valor << endl;
-        arquivo.close();
+        if (strcmp(disps[pos].chave, auxx) > 0)
+        {
+            cout << fixed << setprecision(15) << resultFinal/contFinal << endl;
+            cout << disps[pos].chave << " ";
+            resultFinal = stod(disps[pos].valor);
+            strcpy(auxx, disps[pos].chave);
+            contFinal = 2;
+        }
+        
+        
+              
+        
         
         delete[] disps[pos].chave;
         delete[] disps[pos].valor;
         desalocouChave[pos] = true;
+        
 
-        if (podeAcabar[pos])
+        if (podeAcabar[pos]){
             acabouDisp[pos] = true;
-
-        //cout << "contDisp[pos] = " << contDisp[pos];
+        } 
 
         if (!acabouDisp[pos])
         {
@@ -344,12 +368,11 @@ void intercala(int cont_dispositivos, int capac_memoria)
             if (arquivo.peek() == -1)
             {
                 acabouDisp[pos] = true;
+                i++;
             }
 
             else
             {
-                //cout << " dispositivo " << pos << endl;
-                //cout << "contador disp " << pos << " " << contDisp[pos] << endl;
                 disps[pos] = leituraChave(arquivo, 0, 1, contDisp[pos]);
                 if (arquivo.eof())
                 {
@@ -367,14 +390,14 @@ void intercala(int cont_dispositivos, int capac_memoria)
             if (!acabouDisp[i])
             {
                 acabou = false;
-                //cout << " nao acabou disp " << i << endl;
                 break;
             }
+        if (acabou)
+            cout << fixed << setprecision(15) << resultFinal/contFinal << endl;
         
-        //if(!desalocouMenor)
-            //delete[] menor.chave;
     }
-    
+    //arquivoFinal.close();
+
     for(int i = 0; i < cont_dispositivos ;i++)
         if(!desalocouChave[i]){
             delete[] disps[i].chave;
