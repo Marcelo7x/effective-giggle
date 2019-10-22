@@ -233,7 +233,7 @@ void intercala(int cont_dispositivos, int capac_memoria)
 {
     Dispositivos *disps = new Dispositivos[cont_dispositivos];
     long double resultFinal = 0;
-    char disp_aux[20];
+    char disp_aux[25], disp_aux2[25];
     int cont = 0, a = 0;
     int *contDisp = new int[cont_dispositivos];
     bool *acabouDisp = new bool[cont_dispositivos], *podeAcabar = new bool[cont_dispositivos];
@@ -248,13 +248,27 @@ void intercala(int cont_dispositivos, int capac_memoria)
         contDisp[i] = 0;
         desalocouChave[i] = false;
     }
+    
+    ifstream arquivo[cont_dispositivos];
+    for (int j = 0; j < cont_dispositivos; j++)
+    {
+        sprintf(disp_aux, "arquivo%d.txt", j);
+        //sprintf(disp_aux2, "arquivo%d", i);
+                 
+                arquivo[j].open(disp_aux);
+                if (!arquivo[j].is_open())
+                {
+                    cerr << "Nao abriu o arquivo\n";
+                    exit(1);
+                }
+    }
 
     for (int i = 0; i < cont_dispositivos; i++)
     {
         if (!acabouDisp[i])
         {
 
-            sprintf(disp_aux, "arquivo%d.txt", i);
+           /* sprintf(disp_aux, "arquivo%d.txt", i);
 
             ifstream arquivo(disp_aux);
             if (!arquivo.is_open())
@@ -262,12 +276,12 @@ void intercala(int cont_dispositivos, int capac_memoria)
                 cerr << i <<"Nao abriu o arquivo\n";
                 
                 exit(1);
-            }
+            }*/
 
-            disps[i] = leituraChave(arquivo, 0, 1, 0);
+            disps[i] = leituraChave(arquivo[i], 0, 1, 0);
             //cout << "disp " << disps[i].chave << " " << disps[i].valor << endl;
 
-            arquivo.close();
+            //arquivo.close();
             contDisp[i]++;
         }
     }
@@ -289,6 +303,7 @@ void intercala(int cont_dispositivos, int capac_memoria)
             cerr << "Nao abriu o arquivo final\n";
             exit(1);
         }*/
+    
 
     while (!acabou)
     {
@@ -318,33 +333,30 @@ void intercala(int cont_dispositivos, int capac_memoria)
             }
         }
         
-        
-        //arquivoFinal << disps[pos].chave << "," << disps[pos].valor << endl;
-        
+        //cout << disps[pos].chave << "," << disps[pos].valor << endl;
+        //cout << contFinal << endl;
         if (resultFinal == 0){
             cout << disps[pos].chave << " ";
             resultFinal = stod(disps[pos].valor);
             strcpy(auxx, disps[pos].chave);
-            contFinal = 2;
+            contFinal = 1;
         } 
-        if (strcmp(disps[pos].chave, auxx) == 0)
+        else if (strcmp(disps[pos].chave, auxx) == 0)
         {
             resultFinal += stod(disps[pos].valor);
             contFinal++;
         }
-        if (strcmp(disps[pos].chave, auxx) > 0)
+        else if (strcmp(disps[pos].chave, auxx) > 0)
         {
             cout << fixed << setprecision(15) << resultFinal/contFinal << endl;
+           // cout << auxx << " " << resultFinal << " "<< contFinal << endl;
             cout << disps[pos].chave << " ";
             resultFinal = stod(disps[pos].valor);
             strcpy(auxx, disps[pos].chave);
-            contFinal = 2;
+            contFinal = 1;
         }
         
-        
-              
-        
-        
+
         delete[] disps[pos].chave;
         delete[] disps[pos].valor;
         desalocouChave[pos] = true;
@@ -356,16 +368,16 @@ void intercala(int cont_dispositivos, int capac_memoria)
 
         if (!acabouDisp[pos])
         {
-            sprintf(disp_aux, "arquivo%d.txt", pos);
+            /*sprintf(disp_aux, "arquivo%d.txt", pos);
 
             ifstream arquivo(disp_aux);
             if (!arquivo.is_open())
             {
                 cerr << "Nao abriu o arquivo\n";
                 exit(1);
-            }
+            }*/
 
-            if (arquivo.peek() == -1)
+            if (arquivo[pos].peek() == -1)
             {
                 acabouDisp[pos] = true;
                 i++;
@@ -373,8 +385,8 @@ void intercala(int cont_dispositivos, int capac_memoria)
 
             else
             {
-                disps[pos] = leituraChave(arquivo, 0, 1, contDisp[pos]);
-                if (arquivo.eof())
+                disps[pos] = leituraChave(arquivo[pos], 0, 1, 0);
+                if (arquivo[pos].peek() == 0)
                 {
                     podeAcabar[pos] = true;
                 }
@@ -382,7 +394,7 @@ void intercala(int cont_dispositivos, int capac_memoria)
                 desalocouChave[pos] = false;
                 contDisp[pos]++;
             }
-            arquivo.close();
+            //arquivo.close();
         }
 
         acabou = true;
@@ -392,12 +404,16 @@ void intercala(int cont_dispositivos, int capac_memoria)
                 acabou = false;
                 break;
             }
-        if (acabou)
+        if (acabou){
             cout << fixed << setprecision(15) << resultFinal/contFinal << endl;
+        }
         
     }
     //arquivoFinal.close();
-
+    for (int j = 0; j < cont_dispositivos; j++)
+            {
+                arquivo[j].close();
+            }
     for(int i = 0; i < cont_dispositivos ;i++)
         if(!desalocouChave[i]){
             delete[] disps[i].chave;
