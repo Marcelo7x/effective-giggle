@@ -187,7 +187,7 @@ int part_ordena(ifstream &entrada, int cap_memoria, int cont1, int cont2)
             disps[i] = leituraChave(entrada, cont1, cont2); //extrai registros
             cont++;
         }
-
+        
         Quick(disps, 0, cont-1);    // ordena as os dispositivos de arcodo com a chave
 
         for (int i = 0; i < cont; i++)
@@ -195,9 +195,9 @@ int part_ordena(ifstream &entrada, int cap_memoria, int cont1, int cont2)
             if (i != cont - 1)
                 if (isalnum(disps[i].chave[0]))//grava os registros ordenados nos arquivos
                     saida << disps[i].chave << "," << disps[i].valor << endl;
-            else
+            if(i == cont -1){
                 saida << disps[i].chave << "," << disps[i].valor;
-            
+            }
             delete[] disps[i].chave;
             delete[] disps[i].valor;
         }
@@ -214,44 +214,52 @@ void intercala(int quantArquivos, int capac_memoria)
 {
     Dispositivos *disps = new Dispositivos[quantArquivos], menor;
     long double resultFinal = 0;
-    char nomeArquivo[20], aux[100];
+    char disp_aux[20], aux[100];
     int cont = 0,contFinal = 0, pos = 0;
     int *contDisp = new int[quantArquivos];
     bool *acabouDisp = new bool[quantArquivos], *podeAcabar = new bool[quantArquivos];
-    bool acabou = false;
+    bool acabou = false, *desalocouChave = new bool[quantArquivos];;
 
     for (int i = 0; i < quantArquivos; i++)
     {
         acabouDisp[i] = false;
         podeAcabar[i] = false;
         contDisp[i] = 0;
+        desalocouChave[pos] = false;
     }
     
-    ifstream *arquivo = new ifstream[quantArquivos]; //cria um vetor para arquivo para leitura
-    for (int j = 0; j < quantArquivos; j++) // 
+    ifstream arquivo[quantArquivos];
+    for (int j = 0; j < quantArquivos; j++)
     {
-        sprintf(nomeArquivo, "arquivo%d.txt", j);   //abre todos os arquivos auxiliares
-        arquivo[j].open(nomeArquivo);
-        if (!arquivo[j].is_open())  // verifica se abriu
+        sprintf(disp_aux, "arquivo%d.txt", j);
+        arquivo[j].open(disp_aux);
+        if (!arquivo[j].is_open())
         {
             cerr << "Nao abriu o arquivo\n";
             exit(1);
         }
     }
 
+    fstream arquivoFinal("arquivoFinal.txt", std::fstream::out | std::fstream::app);
+        if (!arquivoFinal.is_open())
+        {
+            cerr << "Nao abriu o arquivo\n";
+            exit(1);
+        }
+        
     for (int i = 0; i < quantArquivos; i++)
     {
         if (!acabouDisp[i])
         {
-            disps[i] = leituraChave(arquivo[i], 0, 1);  //faz a leitura do primeiro de cada arquivo auxiliar
+            disps[i] = leituraChave(arquivo[i], 0, 1);
             contDisp[i]++;
         }
     }
     int i = 0;
     while (!acabou)
     {
-         for (int i = 0; i < quantArquivos; i++) // coloca o primeiro dispositivo como o menor, se o primeiro arquivo acabar
-        {                                        // que corresponde ao primeiro arquivo o menor passa ser o proximo, assim em diante
+         for (int i = 0; i < quantArquivos; i++)
+        {
             if (!acabouDisp[i])
             {
                 menor.valor = disps[i].valor;
@@ -259,7 +267,7 @@ void intercala(int quantArquivos, int capac_memoria)
                 break;
             }
         }
-        for (int i = 0; i < quantArquivos; i++) //verifica qual dispositivo realmente eh o menor
+        for (int i = 0; i < quantArquivos; i++)
         {
             if (!acabouDisp[i])
             {
@@ -267,52 +275,32 @@ void intercala(int quantArquivos, int capac_memoria)
                 {
                     menor.chave = disps[i].chave;
                     menor.valor = disps[i].valor;
-                    pos = i;    //grava a posiçao do dispositivo que contem a menor chave
+                    pos = i;
                 }
             }
         }
-        //imprime a media de acordo com a chave, usando a posicao do menor disositivo encontrado
-        if (resultFinal == 0){ //a primeira vez imprime a primeira chave
-            cout << disps[pos].chave << ", ";
-            resultFinal = stod(disps[pos].valor);   //grava o primero valor para calcular a media
-            strcpy(aux, disps[pos].chave);  //grava a primeira chave em um aux
-            contFinal = 1;
-        } 
-
-        else if (strcmp(disps[pos].chave, aux) == 0)
-        {
-            resultFinal += stod(disps[pos].valor);  //soma o valor das proximas chaves que sao iguais
-            contFinal++;
-        }
-
-        else if (strcmp(disps[pos].chave, aux) > 0)
-        {   //se a chave muda.. imprime a media
-            cout << fixed << setprecision(30) << resultFinal/contFinal << endl;
-            cout << disps[pos].chave << ", ";   //imprime a chave atulizada
-            resultFinal = stod(disps[pos].valor);   //grava o primero valor da chave atualizada para calcular a media
-            strcpy(aux, disps[pos].chave);  //copiar a chave para um auxiliar
-            contFinal = 1;
-        }
-        
+       
+        arquivoFinal << menor.chave << "," << menor.valor << endl;
         delete[] disps[pos].chave;
         delete[] disps[pos].valor;
+        desalocouChave[pos] = true;
 
         if (podeAcabar[pos]){
             acabouDisp[pos] = true;
         } 
 
-        if (!acabouDisp[pos])   //verifica se o arquivo acabou
+        if (!acabouDisp[pos])
         {
             if (arquivo[pos].peek() == -1)
             {
-                acabouDisp[pos] = true; //quando acaba nao eh mais ultilizado
+                acabouDisp[pos] = true;
                 i++;
             }
 
-            else    //se nao acabou
+            else
             {
-                disps[pos] = leituraChave(arquivo[pos], 0, 1);  //le a proxima linha do arquivo foi encontrada a menor chave
-                if (arquivo[pos].peek() == 0)  //verifica se acabou 
+                disps[pos] = leituraChave(arquivo[pos], 0, 1);
+                if (arquivo[pos].peek() == -1)
                     podeAcabar[pos] = true;
                 
                 contDisp[pos]++;
@@ -320,28 +308,75 @@ void intercala(int quantArquivos, int capac_memoria)
         }
 
         acabou = true;
-        for (int i = 0; i < quantArquivos; i++) //verifica se todos os arquivos acabaram
+        for (int i = 0; i < quantArquivos; i++)
             if (!acabouDisp[i])
             {
                 acabou = false;
                 break;
             }
-        if (acabou) //imprime a ultima media da ultima chave
-            cout << fixed << setprecision(30) << resultFinal/contFinal << endl;
     }
 
     for(int j = 0; j < quantArquivos; j++)
         arquivo[j].close();
-
-    for(int i = 0; i < quantArquivos ;i++){
-        delete[] disps[i].chave;
-        delete[] disps[i].valor;
-    }
-    delete[] arquivo;
+    arquivoFinal.close();
+    for(int i = 0; i < quantArquivos ;i++)
+        if(!desalocouChave[i]){
+            delete[] disps[i].chave;
+            delete[] disps[i].valor;
+        }
+    
     delete[] disps;
     delete[] acabouDisp;
     delete[] podeAcabar;
     delete[] contDisp;
+}
+
+void media(){
+    Dispositivos disps;
+    long double resultFinal = 0; int contFinal = 0, a = 0;
+    char *aux;
+    ifstream arquivoFinal("arquivoFinal.txt");
+        if (!arquivoFinal.is_open())
+            {
+                cerr << "Nao abriu o arquivo\n";
+                exit(1);
+            }
+    while (true)
+    {   
+        disps = leituraChave(arquivoFinal, 0, 1);
+        a++;
+        
+        if (resultFinal == 0){
+                cout << disps.chave << ", ";
+                resultFinal = stod(disps.valor);
+                aux = new char[strlen(disps.chave)+1];
+                strcpy(aux, disps.chave);
+                contFinal = 1;
+            } 
+
+            else if (strcmp(disps.chave, aux) == 0)
+            {
+                resultFinal += stod(disps.valor);
+                contFinal++;
+            }
+
+            else if (strcmp(disps.chave, aux) > 0)
+            {
+                cout << fixed << setprecision(50) << resultFinal/contFinal << endl;
+                cout << disps.chave << ", ";
+                resultFinal = stod(disps.valor);
+                delete[]aux;
+                aux = new char[strlen(disps.chave)+1];
+                strcpy(aux, disps.chave);
+                contFinal = 1;
+            }
+            if (arquivoFinal.peek() == -1){
+                cout << fixed << setprecision(50) << resultFinal/contFinal << endl;
+                break;
+            }
+            delete[] disps.chave;
+            delete[] disps.valor;
+    }
 }
 
 
@@ -362,9 +397,12 @@ int main(int argc, char **argv){
 
     posicaoChaves(entrada, argv, cont1, cont2); //funcoes para encotrar as posicoes das colunas onde estao as chaves
     
-    quantArquivos = part_ordena(entrada, cap_memoria, cont1, cont2); //cria n.m ou  n/m+1 arquivos auxiliares com m lihas ordenadas
+    quantArquivos = part_ordena(entrada, cap_memoria, cont1, cont2);
 
-    intercala(quantArquivos, cap_memoria); //intercala os arquivos auxiliares e imprime a medi de cada chave do arquivo base
+    intercala(quantArquivos, cap_memoria);
+
+    media();
+  
 
     return 0;
 }
