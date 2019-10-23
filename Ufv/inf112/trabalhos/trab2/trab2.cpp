@@ -106,6 +106,7 @@ Dispositivos leituraChave(ifstream &entrada, int cont1, int cont2)
     getline(entrada, str); // le a linha desejadas e converte
 
     temp = converte(str);
+    temp[strlen(temp)-1] = '\0';
     disps.chave = new char[strlen(temp)+1];
     disps.valor = new char[strlen(temp)+1];
 
@@ -333,7 +334,7 @@ void intercala(int quantArquivos, int capac_memoria)
 
 void media(){
     Dispositivos disps;
-    long double resultFinal = 0; int contFinal = 0, a = 0;
+    long double resultFinal = 0; int contFinal = 0;
     char *aux;
     ifstream arquivoFinal("arquivoFinal.txt");
         if (!arquivoFinal.is_open())
@@ -344,7 +345,6 @@ void media(){
     while (true)
     {   
         disps = leituraChave(arquivoFinal, 0, 1);
-        a++;
         
         if (resultFinal == 0){
                 cout << disps.chave << ", ";
